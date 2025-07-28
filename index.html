@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Delivery Challan Generator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
+      padding: 30px;
+      font-size: 18px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+
+    form {
+      max-width: 700px;
+      margin: 0 auto 40px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .challan {
+      width: 850px;
+      margin: 30px auto;
+      padding: 25px;
+      border: 1px solid black;
+      background: white;
+      page-break-after: always;
+      font-size: 18px;
+      position: relative;
+    }
+
+    .challan h2, .challan h4 {
+      text-align: center;
+      margin: 8px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    table, th, td {
+      border: 1px solid black;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      font-size: 18px;
+    }
+
+    .print-btn {
+      display: block;
+      margin: 20px auto;
+      padding: 12px 25px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 18px;
+    }
+
+    @media print {
+      body {
+        background: white;
+        font-size: 18px;
+      }
+
+      form, .print-btn {
+        display: none;
+      }
+
+      .challan {
+        page-break-after: always;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Delivery Challan Generator</h1>
+
+  <form id="challanForm">
+    <label>Company Name: <input type="text" id="company" required></label>
+    <label>Date: <input type="date" id="date" required></label>
+    <label>Job Worker Name: <input type="text" id="jobworker" required></label>
+    <label>Customer Name: <input type="text" id="customer" required></label>
+    <label>Vehicle Number: <input type="text" id="vehicle" placeholder="e.g. DL1AB1234" required></label>
+    <label>Items (Format: Item1:Qty, Item2:Qty):</label>
+    <textarea id="items" rows="3" required placeholder="Example: Apple:10, Mango:20"></textarea>
+    <button type="submit">Generate Challan</button>
+  </form>
+
+  <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+
+  <div id="output"></div>
+
+  <script>
+    const form = document.getElementById('challanForm');
+    const output = document.getElementById('output');
+
+    // Auto-fill today's date
+    document.getElementById('date').valueAsDate = new Date();
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      output.innerHTML = '';
+
+      const company = document.getElementById('company').value;
+      const date = document.getElementById('date').value;
+      const jobworker = document.getElementById('jobworker').value;
+      const customer = document.getElementById('customer').value;
+      const vehicle = document.getElementById('vehicle').value;
+      const itemText = document.getElementById('items').value;
+
+      const items = itemText.split(',').map(entry => {
+        const [name, qty] = entry.split(':').map(e => e.trim());
+        return { name, qty };
+      });
+
+      const copyLabels = ['Original Copy', 'Duplicate Copy', 'Triplicate Copy'];
+
+      for (let i = 0; i < 3; i++) {
+        const challan = document.createElement('div');
+        challan.className = 'challan';
+        challan.innerHTML = `
+          <h2>${company}</h2>
+          <h4>Delivery Challan - ${copyLabels[i]}</h4>
+          <p><strong>Date:</strong> ${date}</p>
+          <p><strong>Job Worker:</strong> ${jobworker}</p>
+          <p><strong>Customer:</strong> ${customer}</p>
+          <p><strong>Vehicle Number:</strong> ${vehicle}</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Sr. No.</th>
+                <th>Item Name</th>
+                <th>Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map((item, index) => `
+                <tr>
+                  <td>${index + 1}</td>
+                  <td>${item.name}</td>
+                  <td>${item.qty}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <p style="margin-top: 50px;"><strong>Signature:</strong><br>
+            <img src="signature.png" alt="Signature" style="height:80px; margin-top:10px;">
+          </p>
+        `;
+        output.appendChild(challan);
+      }
+    });
+  </script>
+</body>
+</html>
